@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.1'
 services:
   db:
     image: mysql:8.0
@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: K775bZ~/@08P
-      MYSQL_DATABASE: WooDooBase
+      MYSQL_DATABASE: WooDoo
       MYSQL_USER: f020woodoo
       MYSQL_PASSWORD: K775bZ~/@08P-database
 
@@ -16,13 +16,12 @@ services:
       - db
     image: wordpress:latest
     volumes:
-      - ./wordpress:/var/www/html
-      - ./plugins:/var/www/html/wp-content/plugins
+      - ./wp-content:/var/www/html/wp-content
     ports:
-      - "8000:80"
+      - "8080:80"
     restart: always
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: f020woodoo
-      WORDPRESS_DB_PASSWORD: K775bZ~/@08P
+      WORDPRESS_DB_PASSWORD: K775bZ~/@08P-database
       WORDPRESS_DB_NAME: WooDoo
