@@ -17,6 +17,17 @@ services:
       - SETUID
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    mem_limit: 512M
+    cpu_shares: 1024
 
   wordpress:
     depends_on:
@@ -40,7 +51,35 @@ services:
       - SETUID
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    mem_limit: 512M
+    cpu_shares: 1024
+
+  # Optional: Add a reverse proxy for HTTPS
+  # proxy:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx/conf:/etc/nginx/conf.d
+  #     - ./nginx/certs:/etc/nginx/certs
+  #   depends_on:
+  #     - wordpress
+  #   networks:
+  #     - wordpress_network
 
 networks:
   wordpress_network:
     driver: bridge
+    # Consider internal network option for production
+    # internal: true
