@@ -1,0 +1,46 @@
+version: '3.1'
+services:
+  db:
+    image: mysql:8.0
+    volumes:
+      - ./db_data:/var/lib/mysql
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - wordpress_network
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+    ports:
+      - "8000:80"
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - wordpress_network
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - NET_BIND_SERVICE
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  wordpress_network:
+    driver: bridge
