@@ -1,89 +1,86 @@
-version: "3.8"
-
 services:
-  db:
+  odoo-db:
     image: postgres:13
-    platform: linux/arm64/v8
-    container_name: odoo-db
+    platform: linux/arm64
     environment:
-      POSTGRES_DB: odoo
-      POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
     volumes:
-      - ./odoo/db-data:/var/lib/postgresql/data
+      - odoo-db-data:/var/lib/postgresql/data
     networks:
       - woodoo-net
 
   odoo:
-    image: odoo:14
-    platform: linux/amd64  # Odoo image NEM natív ARM64, így emuláció kell
-    container_name: odoo
+    build:
+      context: ./odoo
+      dockerfile: Dockerfile
+      platform: linux/arm64
     depends_on:
-      - db
+      - odoo-db
+    environment:
+      - HOST=${ODOO_DB_HOST}
+      - USER=${ODOO_DB_USER}
+      - PASSWORD=${ODOO_DB_PASSWORD}
     ports:
       - "8069:8069"
-    environment:
-      - HOST=db
-      - USER=odoo
-      - PASSWORD=odoo
     volumes:
-      - ./odoo/extra-addons:/mnt/extra-addons
+      - ./odoo/addons:/mnt/extra-addons
     networks:
       - woodoo-net
 
   wp-db:
     image: mariadb:10.5
-    platform: linux/arm64/v8
-    container_name: wp-db
+    platform: linux/arm64
+    restart: always
     environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ./wordpress/db-data:/var/lib/mysql
+      - wp-db-data:/var/lib/mysql
     networks:
       - woodoo-net
 
   wordpress:
-    image: wordpress:latest
-    platform: linux/arm64/v8
-    container_name: wordpress
+    build:
+      context: ./wordpress
+      dockerfile: Dockerfile
+      platform: linux/arm64
     depends_on:
       - wp-db
     ports:
       - "8080:80"
     environment:
-      WORDPRESS_DB_HOST: wp-db
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
     volumes:
-      - ./wordpress/html:/var/www/html
+      - wordpress-data:/var/www/html
     networks:
       - woodoo-net
 
   nginx:
     image: nginx:latest
-    platform: linux/arm64/v8
-    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./certs:/etc/nginx/certs
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/ssl/certs
     depends_on:
-      - odoo
       - wordpress
+      - odoo
     networks:
       - woodoo-net
 
 volumes:
-  # Ezek a volume-ok fizikailag a projekten belül lesznek
-  # de ha külön docker volume-ot akarsz, csak írd át őket sima nevekre
   odoo-db-data:
   wp-db-data:
+  wordpress-data:
 
 networks:
   woodoo-net:
