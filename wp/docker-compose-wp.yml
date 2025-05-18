@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  wp_db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - wp_db_data:/var/lib/mysql
+    networks:
+      - erp_network
+
+  wordpress:
+    image: wordpress:php8.1
+    depends_on:
+      - wp_db
+    ports:
+      - "8080:80"
+    volumes:
+      - ./wp/plugins:/var/www/html/wp-content/plugins
+      - ./wp/themes:/var/www/html/wp-content/themes
+    environment:
+      WORDPRESS_DB_HOST: wp_db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    networks:
+      - erp_network
+
+volumes:
+  wp_db_data:
+networks:
+  erp_network:
+    external: true
