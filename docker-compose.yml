@@ -15,9 +15,7 @@ services:
       - woodoo-net
 
   odoo:
-    build:
-      context: ./odoo
-      dockerfile: Dockerfile
+    image: ghcr.io/castlecraft/odoo14-arm:latest
     platform: linux/arm64
     depends_on:
       - odoo-db
@@ -47,21 +45,19 @@ services:
       - woodoo-net
 
   wordpress:
-    build:
-      context: ./wordpress
-      dockerfile: Dockerfile
+    image: arm64v8/wordpress:latest
     platform: linux/arm64
     depends_on:
       - wp-db
+    environment:
+      - WORDPRESS_DB_HOST=wp-db
+      - WORDPRESS_DB_NAME=${WP_DB_NAME}
+      - WORDPRESS_DB_USER=${WP_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WP_DB_PASSWORD}
     ports:
       - "8080:80"
-    environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
-      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
-      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
     volumes:
-      - wordpress-data:/var/www/html
+      - ./wordpress/html:/var/www/html
     networks:
       - woodoo-net
 
