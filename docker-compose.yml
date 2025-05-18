@@ -1,19 +1,4 @@
-version: '3.8'
-
 services:
-  odoo-db:
-    image: postgres:13
-    platform: linux/arm64
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: ${PGDATA}
-    volumes:
-      - odoo-db-data:/var/lib/postgresql/data
-    networks:
-      - woodoo-net
-
   odoo:
     image: ghcr.io/castlecraft/odoo14-arm:latest
     platform: linux/arm64
@@ -30,17 +15,15 @@ services:
     networks:
       - woodoo-net
 
-  wp-db:
-    image: mariadb:10.5
+  odoo-db:
+    image: postgres:13
     platform: linux/arm64
-    restart: always
     environment:
-      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
-      MYSQL_USER: ${WORDPRESS_DB_USER}
-      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      - POSTGRES_DB=${ODOO_DB_NAME}
+      - POSTGRES_USER=${ODOO_DB_USER}
+      - POSTGRES_PASSWORD=${ODOO_DB_PASSWORD}
     volumes:
-      - wp-db-data:/var/lib/mysql
+      - odoo-db-data:/var/lib/postgresql/data
     networks:
       - woodoo-net
 
@@ -61,25 +44,37 @@ services:
     networks:
       - woodoo-net
 
+  wp-db:
+    image: arm64v8/mariadb:10.5
+    platform: linux/arm64
+    environment:
+      - MYSQL_DATABASE=${WP_DB_NAME}
+      - MYSQL_USER=${WP_DB_USER}
+      - MYSQL_PASSWORD=${WP_DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${WP_DB_ROOT_PASSWORD}
+    volumes:
+      - wp-db-data:/var/lib/mysql
+    networks:
+      - woodoo-net
+
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
+    platform: linux/arm64
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./certs:/etc/ssl/certs
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/certs
     depends_on:
-      - wordpress
       - odoo
+      - wordpress
     networks:
       - woodoo-net
 
 volumes:
   odoo-db-data:
   wp-db-data:
-  wordpress-data:
 
 networks:
   woodoo-net:
-    driver: bridge
