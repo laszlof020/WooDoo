@@ -1,0 +1,7 @@
+services:
+  odoo:
+    image: <your-odoo-image>
+    platform: linux/amd64
+  db:
+    image: <your-db-image>
+    platform: linux/amd64
