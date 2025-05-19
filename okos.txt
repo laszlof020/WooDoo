@@ -3,3 +3,13 @@ database name: WooDoo-dbname
 Email: odoowoofozo@gmail.com
 Password: y/8^HxVh2s
 Phone number: +36301858822
+
+
+ODOO API
+API Key Ready
+×
+Write down your key
+Here is your new API key, use it instead of a password for RPC access. Your login is still necessary for interactive usage.
+---
+5b510424288dcaa31f241c58d85be390cab08671
+---
