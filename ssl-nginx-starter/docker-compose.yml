@@ -1,0 +1,10 @@
+services:
+  nginx:
+    image: nginx:stable
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/certs
+    restart: unless-stopped
