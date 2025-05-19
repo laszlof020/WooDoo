@@ -1,0 +1,6 @@
+# Ignore sensitive files
+okos.txt
+*.key
+*.env
+*.pem
+certs/

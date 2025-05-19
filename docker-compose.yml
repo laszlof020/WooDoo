@@ -1,0 +1,41 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/ssl/certs
+    depends_on:
+      - odoo
+    networks:
+      - woodoo-net
+  odoo:
+    image: odoo:14
+    platform: linux/amd64
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    networks:
+      - woodoo-net
+  db:
+    image: postgres:13
+    platform: linux/amd64
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      - woodoo-net
+
+networks:
+  woodoo-net:
+    driver: bridge
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
